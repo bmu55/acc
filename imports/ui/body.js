@@ -27,7 +27,8 @@ Template.body.helpers({
                 return el.userId === cUserId
             })[0]
         } else {
-            allData = []
+            allData  = []
+
         }
         if (!objUser){
             objUser = {userId:cUserId,arSubs:[]}

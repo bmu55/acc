@@ -1,43 +1,26 @@
 import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
-import { ReactiveDict } from 'meteor/reactive-dict';
-// import { Mongo } from 'meteor/mongo';
-//
-// import { UserList } from '../api/tasks.js';
+
+import { MyData } from '../api/data.js';
 
 import './body.html';
 
-Template.body.onCreated(function bodyOnCreated() {
-    this.state = new ReactiveDict();
-});
 
 Template.body.helpers({
     clearSt(){
         if(!Meteor.userId()) console.log("logout");
-        const stored = Template.instance();
-        stored.state.set('arrUsers','');
     },
     userList() {
 
         let cUserId = Meteor.userId();
-        let objUser, allData;
-        if (localStorage.getItem("myDB")) {
-            allData = JSON.parse(localStorage.getItem("myDB"));
-            objUser = allData.filter(function (el) {
-                return el.userId === cUserId
-            })[0]
-        } else {
-            allData  = []
-
-        }
+        let objUser = MyData.findOne({userId:cUserId});
         if (!objUser){
-            objUser = {userId:cUserId,arSubs:[]}
+            objUser = {userId:cUserId,arSubs:[]};
+            MyData.insert(objUser);
+            objUser = MyData.findOne({userId:cUserId});
         }
-        const stored = Template.instance();
-        let arr = stored.state.get('arrUsers');
-        if (!arr) arr = objUser.arSubs;
+        let arr = objUser.arSubs;
         let arUsers = [];
-        let obj;
         let bdUsers = Meteor.users.find({});
         bdUsers.forEach((user) => {
             let a = arr.filter(function (el) {
@@ -46,48 +29,38 @@ Template.body.helpers({
             if (a){
                 a.curId = !(cUserId === user._id) ;
             } else {
-                obj={};
-                obj.username = user.username;
-                obj.curId = !(cUserId === user._id) ;
-                a = obj;
+                a = {
+                    username : user.username,
+                    curId : !(cUserId === user._id)
+                };
             }
-            let fla = true;
+            let fl = true;
             for (let i = 0; i < arUsers.length; i++){
                 if (arUsers[i] === a.username) {
-                    fla = false;
+                    fl = false;
                     arUsers[i] = a;
                     break
                 }
             }
-            if (fla) arUsers.push(a)
+            if (fl) arUsers.push(a)
         });
-        objUser = {userId:cUserId,arSubs:arUsers};
-        let fl = true;
-        for (let i=0; i < allData.length; i++){
-            if (allData[i].userId === objUser.userId ){
-                fl = false;
-                allData[i] = objUser;
-                break
-            }
-        }
-        if (fl) allData.push(objUser);
-        localStorage.setItem("myDB",JSON.stringify(allData));
-        stored.state.set('arrUsers',arUsers);
-        return stored.state.get('arrUsers')
+        MyData.update(objUser._id,{userId:cUserId,arSubs:arUsers});
+        return arUsers
     },
 });
 
 Template.body.events({
      'click .subs'() {
-        let name = this.username;
-        let stored = Template.instance();
-        let arr = stored.state.get('arrUsers');
+         let name = this.username;
+         let cUserId = Meteor.userId();
+         let objUser = MyData.findOne({userId:cUserId});
+         let arr = objUser.arSubs;
         arr.map(function (el) {
             if (el.username === name) {
                 el.subs = !el.subs
             }
         });
-        stored.state.set('arrUsers',arr)
+         MyData.update(objUser._id,{userId:cUserId,arSubs:arr});
     },
 });
 

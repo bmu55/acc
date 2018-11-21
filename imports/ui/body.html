@@ -1,0 +1,32 @@
+
+<body>
+<div class="container">
+    <header>
+        <h1 style="display: flex; justify-content: center">{{#if currentUser}}Hi,&nbsp;{{/if}}
+
+        {{> loginButtons}}</h1>
+    </header>
+
+        {{#if currentUser}}
+
+        <!--form class="find-user">
+            <input type="text" name="txt_find" placeholder="Type to find user" />
+        </form-->
+    <h2>User list for subscription</h2>
+    <ul>
+        {{#each userList}}
+        {{> userItem}}
+        {{/each}}
+    </ul>
+    {{else}}
+    <h2>Pleas sign in</h2>{{clearSt}}
+    {{/if}}
+</div>
+</body>
+<template name="userItem">{{#if curId}}
+    <li style="display: flex;justify-content: space-between" class="{{#if subs}}subs_user{{/if}}">
+        <span class="text">{{username}}</span> {{#if subs}}
+            <span class="subs"> unfollow </span> {{else}}<span class="subs"> follow </span>
+            {{/if}}
+    </li> {{/if}}
+</template>

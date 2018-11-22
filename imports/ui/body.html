@@ -15,14 +15,22 @@
         {{/each}}
     </ul>
     {{else}}
-    <h2>Pleas sign in</h2>{{clearSt}}
+    <h2>Existing users:</h2>
+        {{#each showUsers}}
+        {{> user}}
+        {{/each}}
     {{/if}}
 </div>
 </body>
-<template name="userItem">{{#if curId}}
+<template name="userItem">{{#if showUs username }}
     <li style="display: flex;justify-content: space-between" class="{{#if subs}}subs_user{{/if}}">
         <span class="text">{{username}}</span> {{#if subs}}
             <span class="subs"> unfollow </span> {{else}}<span class="subs"> follow </span>
             {{/if}}
     </li> {{/if}}
+</template>
+<template name="user">
+    <li>
+        <span class="text">{{username}} </span>
+    </li>
 </template>

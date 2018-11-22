@@ -2,13 +2,17 @@ import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 
 import { MyData } from '../api/data.js';
+import { UsersList } from '../api/data.js';
 
 import './body.html';
 
-
 Template.body.helpers({
-    clearSt(){
-        if(!Meteor.userId()) console.log("logout");
+    showUsers(){
+        if(!Meteor.userId()) {
+            return UsersList.find({},{sort: { username: 1 }})
+        } else {
+            return []
+        }
     },
     userList() {
 
@@ -21,19 +25,12 @@ Template.body.helpers({
         }
         let arr = objUser.arSubs;
         let arUsers = [];
-        let bdUsers = Meteor.users.find({});
+        let bdUsers = UsersList.find({},{sort: { username: 1 }});
         bdUsers.forEach((user) => {
             let a = arr.filter(function (el) {
                 return el.username === user.username
             })[0];
-            if (a){
-                a.curId = !(cUserId === user._id) ;
-            } else {
-                a = {
-                    username : user.username,
-                    curId : !(cUserId === user._id)
-                };
-            }
+            if (!a) a = {username : user.username};
             let fl = true;
             for (let i = 0; i < arUsers.length; i++){
                 if (arUsers[i] === a.username) {
@@ -44,6 +41,12 @@ Template.body.helpers({
             }
             if (fl) arUsers.push(a)
         });
+        // UsersList.update(objUser._id,{$set:{profile:{name:"www"}}});
+        // console.log(UsersList.find({_id:Meteor.userId()}));
+        let temp1 = arUsers.filter(function (el) {return el.subs});
+        let temp2 = arUsers.filter(function (el) {return !el.subs});
+        arUsers = temp1.concat(temp2);
+        //console.log(arUsers);
         MyData.update(objUser._id,{userId:cUserId,arSubs:arUsers});
         return arUsers
     },
@@ -64,4 +67,8 @@ Template.body.events({
     },
 });
 
-
+Template.userItem.helpers ({
+    showUs: function(name){
+        return name !== Meteor.user().username;
+    }
+});

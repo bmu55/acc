@@ -7,15 +7,18 @@ import { UsersList } from '../api/data.js';
 import './body.html';
 
 Template.body.helpers({
-    showUsers(){
+    showUsers(){ //if users logout: render list all users with counts
         if(!Meteor.userId()) {
             let list =  UsersList.find({},{sort: { username: 1 }});
             let ret = [];
             list.forEach((user) =>{
+                let counts;
                 let objUser = MyData.findOne({userId:user._id});
-                let counts = objUser.arSubs.filter(function (el) {
-                    return el.subs
-                }).length;
+                if (objUser) {
+                    counts = objUser.arSubs.filter((el) => el.subs).length;
+                } else {
+                    counts = 0
+                }
                 ret.push({username:user.username,counts:counts})
             });
             return ret
@@ -23,66 +26,67 @@ Template.body.helpers({
             return []
         }
     },
-    userList() {
-
+    userList() { // return the updated subscription array
         let cUserId = Meteor.userId();
+        // get saved subscription array from current user
         let objUser = MyData.findOne({userId:cUserId});
         if (!objUser){
             objUser = {userId:cUserId,arSubs:[]};
             MyData.insert(objUser);
         }
-        //let arr = objUser.arSubs;
-        let arUsers = [];
         let bdUsers = UsersList.find({},{sort: { username: 1 }});
-        bdUsers.forEach((user) => {
-            let a = objUser.arSubs.filter(function (el) {
-                return el.username === user.username
-            })[0];
-            if (!a) a = {username : user.username};
+        let arUsers = [];
+        bdUsers.forEach((user) => { // fill array of subscriptions
+            let a = objUser.arSubs.filter((el) => el.username === user.username)[0];
+            if (!a) a = {username:user.username, subs:false};
             arUsers.push(a)
         });
-        // UsersList.update(objUser._id,{$set:{profile:{name:"www"}}});
-        // console.log(UsersList.find({_id:Meteor.userId()}));
-        let temp1 = arUsers.filter(function (el) {return el.subs});
-        let temp2 = arUsers.filter(function (el) {return !el.subs});
-        arUsers = temp1.concat(temp2);
-        // console.log(arUsers);
+        //move subscriptions to the beginning of the array
+        arUsers = arUsers.filter((el) => el.subs).concat(arUsers.filter((el) => !el.subs));
+        // save array in my data
         MyData.update(objUser._id,{userId:cUserId,arSubs:arUsers});
+
+        // failed write to profile :-(
+        UsersList.update(objUser._id,{$set:{profile:{name:"www",arSubs:arUsers}}});
+
         return arUsers
     },
 });
 
 Template.body.events({
      'click .subs'() {
-         let elDom = document.getElementById(this.username);
-         elDom.classList.add('move');
+         // let elDom = document.getElementById(this.username);
+         // elDom.classList.add('move'); // animation for change
+         $('li').addClass('move');
          let name = this.username;
          let cUserId = Meteor.userId();
          let objUser = MyData.findOne({userId:cUserId});
          let arr = objUser.arSubs;
-        arr.map(function (el) {
+        arr.map(function (el) { // change subscription
             if (el.username === name) {
                 el.subs = !el.subs
             }
         });
-        setTimeout(function () {
+        setTimeout(function () { // save change (after animation)
             MyData.update(objUser._id,{userId:cUserId,arSubs:arr});
-            elDom.classList.remove('move');
+            //elDom.classList.remove('move');
+            $('li').removeClass('move')
         },600)
     }
 });
 
 Template.userItem.helpers ({
-    showUs: function(name){
+    showUs: function(name){ // don't show current user
         return name !== Meteor.user().username;
     }
 });
 Template.count.helpers ({
    counts: function () {
        let objUser = MyData.findOne({userId:Meteor.userId()});
-       let arr = objUser.arSubs.filter(function (el) {
-           return el.subs
-       });
+       let arr = [];
+       if (objUser) {
+           arr = objUser.arSubs.filter((el) => el.subs);
+       }
        return arr.length
    }
 });

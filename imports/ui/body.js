@@ -75,11 +75,11 @@ Template.body.events({
     }
 });
 
-Template.userItem.helpers ({
-    showUs: function(name){ // don't show current user
-        return name !== Meteor.user().username;
-    }
-});
+// Template.userItem.helpers ({
+//     showUs: function(name){ // don't show current user
+//         return name !== Meteor.user().username;
+//     }
+// });
 Template.count.helpers ({
    counts: function () {
        let objUser = MyData.findOne({userId:Meteor.userId()});

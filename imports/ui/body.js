@@ -34,7 +34,7 @@ Template.body.helpers({
             objUser = {userId:cUserId,arSubs:[]};
             MyData.insert(objUser);
         }
-        let bdUsers = UsersList.find({},{sort: { username: 1 }});
+        let bdUsers = UsersList.find({_id:{$ne:cUserId}},{sort: { username: 1 }});
         let arUsers = [];
         bdUsers.forEach((user) => { // fill array of subscriptions
             let a = objUser.arSubs.filter((el) => el.username === user.username)[0];

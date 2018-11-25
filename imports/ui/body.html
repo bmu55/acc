@@ -24,12 +24,12 @@
     {{/if}}
 </div>
 </body>
-<template name="userItem">{{#if showUs username }}
+<template name="userItem">
     <li class="{{#if subs}}subs_user{{else}}unsubs{{/if}}" id="{{username}}">
         <span class="text">{{username}}</span> {{#if subs}}
             <span class="subs"> unfollow </span> {{else}}<span class="subs"> follow </span>
             {{/if}}
-    </li> {{/if}}
+    </li>
 </template>
 <template name="user">
     <li>
